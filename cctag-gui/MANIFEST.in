@@ -1,0 +1,2 @@
+include *.xrc
+include resources/*
