@@ -1,0 +1,105 @@
+2004-12-16
+
+* Test committ.
+
+2004-11-24
+
+* Finalized subject/keyword support.
+
+* Changed built file name from Publisher to ccPublisher on OSX
+
+* Stupid bug fixes
+
+2004-11-10
+
+* Added file sharing text to self-host option
+
+* Fixed MP3 format detection
+
+* Include any work metadata in archive.org submission
+
+2004-11-08
+
+* archive.org file sharing language
+
+* Fixed bug which caused IA format page to be displayed if self-hosting.
+
+2004-11-05
+
+* Store prefs, error log in ~/Library/Application Support/ccPublisher on OSX
+
+* Added uploader to meta.xml
+
+2004-11-04
+
+* Add file sharing text, version to How Does This Work window
+
+* Replaced grid-based format selector with array of combo boxes
+
+* Changed layout of "ready" page to make the text clearer.
+
+* Added upload_app to meta.xml
+
+2004-11-03
+
+* Made archive.org URL, license URL into HTML links.
+
+2004-10-29
+
+* Massive UI improvements per conversations with NP, MH.
+
+* 0.9.5 release
+
+2004-10-25
+
+* Normalized tooltips on both labels and associated widgets for work metadata
+  and internet archive metadata.
+
+* Added consistent copyright headers to ccwx package.
+
+* Fixed Win32 upgrade issue
+
+* Added Win32 setup build script which generates the new GUIDs as necessary.
+
+* Set work metadata (work format) if format is detectable.
+
+* Typo corrections in XRC
+
+* Display error message if unable to connect to CC web services.
+
+* Remove non-alphanumeric characters from filenames of uploaded files.
+
+2004-10-24
+
+* Skip work format page if all files can be auto-detected
+
+2004-10-22
+
+* Rolled back spasm-prevent code for Win32
+
+* Added Linux build script, LICENSE file; updated README with basic Linux 
+  build instructions.
+
+* Reworked intro page layout using multiple labels + sizers.
+
+* Changed page changing to prevent "spasms" caused by multiple redraws.
+
+* Created cleaned-up, albeit white backgrounded, icons for OSX and Win32.
+
+* Added format detection to work format page.
+
+2004-10-21
+
+* Skip work format panel if the user specifies audio/video in the work 
+  metadata pane
+
+* Revised page 1 wording
+
+* Tooltips for archive.org/work metadata pages.
+
+* Added description tags to chooselicense-xml/questions.xml; added tooltips
+  derived from those descriptions to the radio buttons on the license chooser.
+
+* Fixed sampling/standard license layout bug (garbled when switching back
+  and forth).
+

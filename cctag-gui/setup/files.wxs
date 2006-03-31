@@ -1,0 +1,57 @@
+Microsoft (R) Windows Installer Xml Tool version 2.0.2110.0
+Copyright (C) Microsoft Corporation 2003. All rights reserved.
+
+<Wix xmlns="http://schemas.microsoft.com/wix/2003/01/wi">
+  <Fragment>
+    <DirectoryRef Id="TARGETDIR">
+      <Directory Id="directory0" Name="dist">
+        <Component Id="component0" DiskId="1">
+          <File Id="file0" Name="_bsddb.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_bsddb.pyd" />
+          <File Id="file1" Name="_socket.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_socket.pyd" />
+          <File Id="file2" Name="_sre.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_sre.pyd" />
+          <File Id="file3" Name="_ssl.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_ssl.pyd" />
+          <File Id="file4" Name="_winreg.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_winreg.pyd" />
+          <File Id="file5" Name="datetime.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\datetime.pyd" />
+          <File Id="file6" Name="pyexpat.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\pyexpat.pyd" />
+          <File Id="file7" Name="UNICOD~1.PYD" LongName="unicodedata.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\unicodedata.pyd" />
+          <File Id="file8" Name="zlib.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\zlib.pyd" />
+          <File Id="file9" Name="_CONTR~1.PYD" LongName="_controls_.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_controls_.pyd" />
+          <File Id="file10" Name="_core_.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_core_.pyd" />
+          <File Id="file11" Name="_gdi_.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_gdi_.pyd" />
+          <File Id="file12" Name="_misc_.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_misc_.pyd" />
+          <File Id="file13" Name="_WINDO~1.PYD" LongName="_windows_.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_windows_.pyd" />
+          <File Id="file14" Name="_xrc.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_xrc.pyd" />
+          <File Id="file15" Name="library.zip" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\library.zip" />
+          <File Id="file16" Name="WXMSW2~1.DLL" LongName="wxmsw252h_xrc_vc.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\wxmsw252h_xrc_vc.dll" />
+          <File Id="file17" Name="WXBASE~1.DLL" LongName="wxbase252h_xml_vc.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\wxbase252h_xml_vc.dll" />
+          <File Id="file18" Name="w9xpopen.exe" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\w9xpopen.exe" />
+          <File Id="file19" Name="WXMSW2~2.DLL" LongName="wxmsw252h_core_vc.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\wxmsw252h_core_vc.dll" />
+          <File Id="file20" Name="WXBASE~2.DLL" LongName="wxbase252h_vc.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\wxbase252h_vc.dll" />
+          <File Id="file21" Name="WXBASE~3.DLL" LongName="wxbase252h_net_vc.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\wxbase252h_net_vc.dll" />
+          <File Id="file22" Name="WXMSW2~3.DLL" LongName="wxmsw252h_html_vc.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\wxmsw252h_html_vc.dll" />
+          <File Id="file23" Name="WXMSW2~4.DLL" LongName="wxmsw252h_adv_vc.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\wxmsw252h_adv_vc.dll" />
+          <File Id="file24" Name="cctag.exe" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\cctag.exe" />
+          <File Id="file25" Name="LIBXML~1.PYD" LongName="libxml2mod.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\libxml2mod.pyd" />
+          <File Id="file26" Name="LIBXSL~1.PYD" LongName="libxsltmod.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\libxsltmod.pyd" />
+          <File Id="file27" Name="_wizard.pyd" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\_wizard.pyd" />
+          <File Id="file28" Name="iconv.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\iconv.dll" />
+          <File Id="file29" Name="libxml2.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\libxml2.dll" />
+          <File Id="file30" Name="libxslt.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\libxslt.dll" />
+          <File Id="file31" Name="libexslt.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\libexslt.dll" />
+          <File Id="file32" Name="wizard.xrc" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\wizard.xrc" />
+          <File Id="file33" Name="cct.exe" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\cct.exe" />
+          <File Id="file34" Name="ccl.exe" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\ccl.exe" />
+          <File Id="file35" Name="CCTAG-~1.EXE" LongName="cctag-wiz.exe" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\cctag-wiz.exe" />
+          <File Id="file36" Name="python23.dll" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\python23.dll" />
+        </Component>
+        <Directory Id="directory1" Name="RESOUR~1" LongName="resources">
+          <Component Id="component1" DiskId="1">
+            <File Id="file37" Name="cctag.xrc" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\resources\cctag.xrc" />
+            <File Id="file38" Name="wizard.xrc" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\resources\wizard.xrc" />
+            <File Id="file39" Name="cc_33.png" src="C:\cygwin\home\Nathan R. Yergler\cctag-gui\dist\resources\cc_33.png" />
+          </Component>
+        </Directory>
+      </Directory>
+    </DirectoryRef>
+  </Fragment>
+</Wix>
