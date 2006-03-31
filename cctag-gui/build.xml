@@ -1,0 +1,45 @@
+<project name="ccpublisher">
+
+  <target name="init">
+    <!-- load the property file -->
+    <property file="_sandtoy.conf" />
+  </target>
+
+  <target name="build_package" depends="init">
+
+    <!-- clean up build environment -->
+    <delete dir="${basedir}/build" failonerror="false" />
+    <delete dir="${basedir}/dist"  failonerror="false" />
+
+    <!-- build the target with a call to the distutils script -->
+    <if>
+      <equals arg1="${os.name}" arg2="Mac OS X" />
+      <then>
+	<exec dir="${basedir}" executable="python">
+	  <arg line="setup.py build_app" />
+	</exec>
+      </then>
+      <elseif>
+	<os family="windows" />
+	<then>
+	  <exec dir="${basedir}" executable="python" >
+	    <arg line="setup.py py2exe" />
+	  </exec>
+
+	  <!-- run any additional packaging (Win32 only) -->
+	  <exec dir="${cygwin_dir}" executable="bin/bash">
+	    <arg line="setup/build.sh" />
+	  </exec>
+
+	</then>
+      </elseif>
+    </if>
+
+  </target>
+
+  <target name="release_package" depends="init">
+    <echo message="releasing" />
+
+  </target>
+
+</project>

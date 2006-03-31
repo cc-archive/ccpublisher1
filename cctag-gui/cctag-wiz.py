@@ -1,0 +1,759 @@
+#!/usr/bin/env python
+"""
+cctag-wiz.py
+
+Provides a wizard for embedding license claims in media files and
+generating the corresponding verification RDF.
+
+Requires wxPython 2.5.3 with Unicode enabled and Python 2.3.
+"""
+
+__id__ = "$Id$"
+__version__ = "$Revision$"
+__copyright__ = '(c) 2004, Creative Commons, Nathan R. Yergler'
+__license__ = 'licensed under the GNU GPL2'
+
+import sys
+import os
+import pickle
+import webbrowser
+import ftplib
+import shelve
+import socket
+import platform
+
+import wx
+import wx.xrc as xrc
+from wx.xrc import XRCCTRL, XRCID
+
+import ccwx.stext
+import ccwx.xrcwiz
+from ccwx.xrcwiz import XrcWizPage
+from ccwx.wizpages import DestWizPage, ProgressWizPage, FileFormatWizPage
+from ccwx.wizpages import ChooserWizPage, FilesWizPage, LoginWizPage
+
+import cctag.rdf as rdf
+from cctag.metadata import metadata
+from cctag.const import CCT_VERSION
+
+import pyarchive
+import html
+
+XRC_SOURCE = 'wizard.xrc'
+PREFS_FILE = '.publisher.prefs'
+IMAGES_DIR = 'resources'
+ICON_FILE = 'cc.ico'
+ERR_LOG = 'err.log'
+
+LICENSE_URLS = {}
+
+class dropFileTarget(wx.FileDropTarget):
+    def __init__(self, window):
+        wx.FileDropTarget.__init__(self)
+        self._window = window
+
+    def OnDropFiles(self, x, y, filenames):
+        self._window.selectFiles(filenames)
+
+class CcTagWizard(ccwx.xrcwiz.XrcWiz):
+   def __init__(self, app):
+      ccwx.xrcwiz.XrcWiz.__init__(self, app, 
+				  filename=XRC_SOURCE, id='FRM_MAIN') 
+
+
+      # set the application icon
+      _icon = wx.Icon(ICON_FILE, wx.BITMAP_TYPE_ICO)
+      self.SetIcon(_icon)
+
+      # set the header image from the appropriate location
+      placeholder = XRCCTRL(self, "IMG_PLACEHOLDER")
+      pg_sizer = placeholder.GetParent().GetSizer()
+      pg_sizer = [n for n in pg_sizer.GetChildren()
+                  if n.GetWindow() == placeholder][0]
+      publish_guy = wx.StaticBitmap(self, bitmap=wx.Bitmap(
+          os.path.join(IMAGES_DIR, 'publishguy_small.gif'))
+      )
+      
+      placeholder.Hide()
+      pg_sizer.SetWindow(publish_guy)
+
+      self._files = []
+      self.__images = wx.ImageList(33,33)
+      self.uploadingToArchive = True
+      
+      # load the wizard pages from XRC
+      self.pages.append(XrcWizPage(self, self.xrc, 'CCTAG_WELCOME',
+                                   'Welcome to ccPublisher'))
+      self.pages.append(FilesWizPage(self, self.xrc, 'DROPFILES',
+                                     'Select Your File'))
+      self.pages.append(XrcWizPage(self, self.xrc, 'WORK_METADATA',
+                                   'Tell Us About Your File'))
+      self.pages.append(ChooserWizPage(self))
+      self.pages.append(LoginWizPage(self, self.xrc, 'ARCHIVE_LOGIN'))
+      #self.pages.append(XrcWizPage(self, self.xrc, 'WORK_TYPE',
+      #                  'Select Your Archive Collection'))
+      self.pages.append(FileFormatWizPage(self, self.xrc, 'FILE_FORMAT'))
+      self.pages.append(XrcWizPage(self, self.xrc, 'READY',
+                                   'Tag and Send Your File to the Web'))
+      self.pages.append(XrcWizPage(self, self.xrc, 'ARCHIVE_METADATA',
+                                   'Tell Us More About your File'))
+      self.pages.append(ProgressWizPage(self, self.xrc, 'FTP_PROGRESS',
+                                        'Uploading to the Internet Archive'))
+
+      # set the initial page ordering
+      self.chainPages()
+
+      # add the additional pages for self-hosting support
+      selfhost_start = len(self.pages)
+
+      self.pages.append(XrcWizPage(self, self.xrc, 'VERIFICATION',
+                                   'Where Will Your Host Your File?'))
+      self.pages.append(self.getPage('READY'))
+      self.pages.append(XrcWizPage(self, self.xrc, 'VRDF',
+                                   'Get Code For Your Web Page'))
+
+      self.chainPages(start=selfhost_start)
+      self.cur_page = 0
+      self.addCurrent(None)
+
+      self.pages[self.cur_page].Show()
+
+      # connect event handlers
+      self.Bind(wx.EVT_BUTTON, self.onHelp, XRCCTRL(self, "HELP_WHAT_IS_IA"))
+      self.Bind(wx.EVT_BUTTON, self.onHelp, XRCCTRL(self, "HELP_NO_IA_ACCOUNT"))
+      self.Bind(wx.EVT_BUTTON, self.onHelp, XRCCTRL(self, "HELP_WHAT_TYPES"))
+      self.Bind(wx.EVT_BUTTON, self.onHelp, XRCCTRL(self, "HELP_EMBEDDING"))
+
+      self.Bind(wx.EVT_BUTTON, self.onShowAdvWork,
+                XRCCTRL(self, "CMD_ADV_WORKMETA"))
+      self.Bind(wx.EVT_BUTTON, self.onSelfHost,
+                XRCCTRL(self, "CMD_HOST_MYSELF"))
+      self.Bind(wx.EVT_BUTTON, self.saveRdf, XRCCTRL(self, "CMD_SAVE_RDF"))
+      
+      self.Bind(wx.EVT_LEFT_UP, 
+              lambda e: XRCCTRL(self, "CHK_AGREE").SetValue(not(XRCCTRL(self, "CHK_AGREE").GetValue())), 
+              XRCCTRL(self, "LBL_TERMS"))
+              
+      # XXX: why the hell are these lines needed?
+      self.Bind(wx.EVT_BUTTON, self.onNext, XRCCTRL(self, "CMD_NEXT"))
+      self.Bind(wx.EVT_BUTTON, self.onPrev, XRCCTRL(self, "CMD_PREV"))
+
+      # set up drag and drop support
+      self.SetDropTarget(dropFileTarget(self))
+
+      # explicitly attach the drop target to the listview (OSX)
+      XRCCTRL(self, "LST_FILES").SetDropTarget(dropFileTarget(self)) 
+
+      self.SetAutoLayout(True)
+      self.__platformLayout()
+      self._initImages()
+      self.Layout()
+
+   def __platformLayout(self):
+       self.SetSize(self.GetMinSize())
+
+       # check the background color
+       if sys.platform != 'darwin':
+           html.BGCOLOR = "%X" % \
+                     XRCCTRL(self, "PNL_BUTTONS").GetBackgroundColour().GetRGB()
+           # reset the background color
+           self.SetBackgroundColour(XRCCTRL(self, "PNL_BUTTONS").GetBackgroundColour())
+
+   def onShowAdvWork(self, event):
+       XRCCTRL(self, "PNL_ADVANCED").Show(
+           not(XRCCTRL(self, "PNL_ADVANCED").IsShown()))
+
+   def onSelfHost(self, event):
+       """User chose to self-host; reset the next page and
+       fire a "next" event to show verification url entry.
+       """
+
+       self.uploadingToArchive = False
+
+       self.pages[self.cur_page].SetNext(self.getPage('VERIFICATION'))
+       self.pages[self.cur_page].GetNext().SetPrev(self.pages[self.cur_page])
+       
+       self.onNext(None)
+
+   def __validateMetadata(self):
+       errors = []
+
+       if not(XRCCTRL(self, "TXT_WORK_TITLE").GetValue().strip()) or \
+              XRCCTRL(self, "TXT_WORK_TITLE").GetValue().lower() == 'untitled':
+           errors.append('a title')
+
+       if len(XRCCTRL(self, "TXT_DESCRIPTION").GetValue().split()) < 15:
+           errors.append('a brief description (at least 15 words, please)')
+
+       if errors == []:
+           return None
+       else:
+           return "You must supply %s for your work." % " and ".join(errors)
+       
+   def OnPageChanging(self, event):
+       # call the super class
+       if not(event.GetPage().validate(event)):
+           event.Veto()
+           return
+
+       # additional dispatch
+       if event.GetPage().xrcid == 'CCTAG_WELCOME' and event.direction:
+           # make sure the user has accepted the "understanding" box
+           if not(XRCCTRL(self, "CHK_AGREE").GetValue()):
+               wx.MessageBox("You must indicate your understanding by checking the box.",
+                         caption="ccPublisher: Error.",
+                         style=wx.OK|wx.ICON_ERROR, parent=self)
+               event.Veto()
+               
+       if event.GetPage().xrcid == 'WORK_METADATA' and event.direction:
+           # make sure the user supplied a title and description.
+           errors = self.__validateMetadata()
+           if errors:
+               wx.MessageBox(errors,
+                         caption="ccPublisher: Error.",
+                         style=wx.OK|wx.ICON_ERROR, parent=self)
+               event.Veto()
+               return
+
+       if event.GetPage().xrcid == 'ARCHIVE_LOGIN' and \
+          self.uploadingToArchive and event.direction:
+
+           if XRCCTRL(self, "TXT_USERNAME").GetValue().strip() == '' or \
+              XRCCTRL(self, "TXT_PASSWORD").GetValue().strip() == '':
+               wx.MessageBox("Please enter your archive.org username and password.",
+                         caption="ccPublisher: Error.",
+                         style=wx.OK|wx.ICON_ERROR, parent=self)
+               event.Veto()
+
+       if event.GetPage().xrcid == 'FILE_FORMAT' and \
+          event.direction:
+           if not (event.GetPage().allFormatted()):
+               wx.MessageBox("Please select a format for each file.",
+                         caption="publisher: Error.",
+                         style=wx.OK|wx.ICON_ERROR, parent=self)
+               event.Veto()
+               
+       if event.GetPage().xrcid == 'READY' and \
+              not(self.uploadingToArchive) and \
+              event.direction:
+           __cur_cursor = self.GetCursor()
+           wx.Yield()
+           self.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+           
+           self.embed(event)
+           wx.Yield()
+
+           self.SetCursor(__cur_cursor)
+
+       if event.GetPage().xrcid == 'READY' and \
+          self.uploadingToArchive and \
+          event.direction:
+
+           if XRCCTRL(self, "CHK_ADV_ARCHIVE").GetValue():
+               event.GetPage().SetNext(self.getPage('ARCHIVE_METADATA'))
+           else:
+               event.GetPage().SetNext(self.getPage('FTP_PROGRESS'))
+
+           event.GetPage().GetNext().SetPrev(event.GetPage())
+               
+       if event.GetPage().xrcid == 'CHOOSE_LICENSE' and event.direction:
+           self.__license_url = event.GetPage().getLicenseUrl()
+           self.__license_name = event.GetPage().getLicenseName()
+           if self.__license_url is None:
+               # no license was issued; veto
+               wx.MessageBox("You must select a license.",
+                         caption="publisher: Error.",
+                         style=wx.OK|wx.ICON_ERROR, parent=self)
+               event.Veto()
+
+       if event.GetPage().xrcid == 'VERIFICATION' and \
+          XRCCTRL(self, "TXT_VERIFICATION").GetValue().strip() == '' and \
+          event.direction:
+           wx.MessageBox("Please enter the verification URL.",
+                         caption="publisher: Error.",
+                         style=wx.OK|wx.ICON_ERROR, parent=self)
+           event.Veto()
+
+       if event.GetPage().GetNext() == self.getPage('READY'):
+           # set Ready's previous page appropriately
+           event.GetPage().GetNext().SetPrev(event.GetPage())
+
+   def OnPageChanged(self, event):
+       if event.GetPage().xrcid == 'ARCHIVE_LOGIN':
+           self.uploadingToArchive = True
+           
+       if event.GetPage().xrcid == 'FILE_FORMAT' and event.direction:
+          event.GetPage().setFiles(self._files)
+
+       #if event.GetPage().xrcid == 'FILE_FORMAT':
+       #    # see if we know the format for all files
+       #    if event.GetPage().allFormatted():
+       #        if event.direction:
+       #            self.onNext(None)
+       #        else:
+       #            self.onPrev(None)
+           
+       if event.GetPage().xrcid == 'FTP_PROGRESS':
+           # store the current cursor and set to "wait"
+           __cur_cursor = self.GetCursor()
+           self.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+           
+           # disable the finish button
+           XRCCTRL(self, "CMD_NEXT").Disable()
+
+           # upload to the archive
+           try:
+               url = self.archive(event)
+
+               # display final information
+               event.GetPage().setUrl(url)
+           except ftplib.error_perm, e:
+               # invalid username and password
+               print "FTP Error:\n",e.args
+               if ('530' in e.args[0]):
+                   # username/password
+                   wx.MessageBox("Error logging into the Internet Archive;\n"
+                                 "invalid username or password.",
+                             caption="ccPublisher: Error.",
+                             style=wx.OK|wx.ICON_ERROR, parent=self)
+                   self.setPage('ARCHIVE_LOGIN')
+               else:
+                   # some other error
+                   wx.MessageBox("\n".join(e.args),
+                             caption="ccPublisher: Error.",
+                             style=wx.OK|wx.ICON_ERROR, parent=self)
+                   
+           except pyarchive.exceptions.SubmissionError, e:
+               wx.MessageBox("An error occurred while submitting your file;\n"
+                             "%s" % (e.args),
+                             caption="ccPublisher: Error.",
+                             style=wx.OK|wx.ICON_ERROR, parent=self)
+
+               return
+           except socket.error, e:
+               retry = \
+                  wx.MessageBox("An error occurred while uploading your file. "
+                             "The connection may have timed out or "
+                             "disconnected.\n"
+                             "Would you like to retry?",
+                             caption="ccPublisher: Error.",
+                             style=wx.YES_NO|wx.ICON_ERROR, parent=self)
+               if retry == wx.ID_YES:
+                   self.OnPageChanged(event)
+
+               return
+
+           # reset the cursor
+           self.SetCursor(__cur_cursor)
+           
+           XRCCTRL(self, "CMD_NEXT").Enable()
+
+       if event.GetPage().xrcid == 'WORK_METADATA':
+           # check if the holder is pre-populated and select the first item
+           # if it is.
+           if XRCCTRL(self, "TXT_HOLDER").GetCount() > 0:
+               XRCCTRL(self, "TXT_HOLDER").SetSelection(0)
+
+           # see if we can preset the work format
+           if self.getPage('FILE_FORMAT').allFormatted() or \
+                  ('ogg' in [os.path.split(n)[-1].split('.')[-1]
+                             for n in self._files]):
+               XRCCTRL(self, "CMB_WORK_FORMAT").SetValue('Audio')
+           else:
+               # assume video
+               XRCCTRL(self, "CMB_WORK_FORMAT").SetValue('Video')
+           
+       if event.GetPage().xrcid == 'VRDF':
+           XRCCTRL(self, "LBL_VRDF_DEST").SetLabel(
+               "Copy and paste the text below into the document at %s" %
+               XRCCTRL(self, "TXT_VERIFICATION").GetValue()
+               )
+
+       if event.GetPage().xrcid == 'READY':
+           # set up the summary window
+           XRCCTRL(self, "LST_READY_FILES").Clear()
+           XRCCTRL(self, "LST_READY_FILES").AppendItems(self._files)
+
+           ready_msg = "Publisher has collected all the information " \
+           "neccessary to license your files with the %s license." % (
+               self.__license_name)
+           
+           if self.uploadingToArchive:
+               ready_msg = "%s\n%s" % (ready_msg, 
+                   "Your files will be uploaded to the Internet Archive."
+                   )
+               XRCCTRL(self, "CHK_ADV_ARCHIVE").Show()
+           else:
+               ready_msg = "%s\n%s" % (ready_msg, 
+                   "Publisher will generate HTML code which you should "
+                   "copy into the code of your web page."
+                   )
+               XRCCTRL(self, "CHK_ADV_ARCHIVE").Hide()
+               event.GetPage().SetNext(self.getPage('VRDF'))
+               event.GetPage().GetNext().SetPrev(event.GetPage())
+
+           XRCCTRL(self, "LBL_READY_MSG").SetLabel(ready_msg)
+
+       self.Layout()
+               
+   def _initImages(self):
+       """Loads the image list with the necessary objects"""
+       self.__images.Add(wx.Bitmap(os.path.join(IMAGES_DIR, "cc_33.gif")))
+
+       XRCCTRL(self, "LST_FILES").SetImageList(self.__images,
+                                               wx.IMAGE_LIST_NORMAL)
+       
+   def onHelp(self, event):
+       if event.GetId() == XRCID('HELP_WHAT_IS_IA'):
+           webbrowser.open('http://www.archive.org/about/about.php',
+                           True, True)
+       elif event.GetId() == XRCID('HELP_NO_IA_ACCOUNT'):
+           webbrowser.open('http://www.archive.org/account/login.createaccount.php',
+                           True, True)
+       elif event.GetId() == XRCID('HELP_WHAT_TYPES'):
+	   print IMAGES_DIR
+           help = html.HtmlHelp(self, 'Creative Commons Publisher',
+                               html.MORE_INFO % (CCT_VERSION, 
+			       os.path.join(IMAGES_DIR,'publishguy_small.gif')))
+           help.Show()
+       elif event.GetId() == XRCID('HELP_EMBEDDING'):
+           webbrowser.open('http://creativecommons.org/technology/embedding')
+
+   def deleteFiles(self, shortnames):
+        
+        items = [n for n in self._files if n.split(os.sep)[-1] in shortnames]
+
+        for item in items:
+             del self._files[self._files.index(item)]
+             
+        self.resetFileList()
+        
+   def selectFiles(self, files):
+        ro_files = []
+        for fn in files:
+           # set the value of copyright holder (artist) and copyright year
+           file_info = metadata(fn)
+
+           try:
+	       # check the file's permissions
+	       if not(file_info.isWritable()):
+		   ro_files.append(fn)
+		   continue
+
+               artist = str(file_info.getArtist())
+
+               if artist:
+                   XRCCTRL(self, "TXT_HOLDER").Append(artist)
+               XRCCTRL(self, "TXT_YEAR").SetValue(str(file_info.getYear()))
+               XRCCTRL(self, "TXT_WORK_TITLE").SetValue(
+                   str(file_info.getTitle()))
+           except NotImplementedError:
+              # not a supported file type; show an error message
+              #wx.MessageBox("Unknown file type; unable to embed license.",
+              #              caption="publisher: Error.",
+              #              style=wx.OK|wx.ICON_ERROR, parent=self)
+              pass
+          
+           self._files.append(fn)
+        
+        #XXX should we check for an existing claim here and parse if available?
+
+        # reset the file display
+        self.resetFileList()
+        self.getPage('FILE_FORMAT').setFiles(self._files)
+
+        # check if any files were read-only and display an error msg if so
+	if len(ro_files) > 0:
+	    wx.MessageBox("You do not have permission to change "
+			  "the following files:\n%s" % ", \n".join(ro_files),
+			  caption="ccPublisher: Error",
+			  style=wx.OK|wx.ICON_ERROR, parent=self)
+
+        # clear the verification RDF
+        XRCCTRL(self, "TXT_VERIFICATION").SetValue("http://")
+        XRCCTRL(self, "TXT_RDF").SetValue("")
+
+   def resetFileList(self):
+        # reset the file view
+        XRCCTRL(self, "LST_FILES").ClearAll()
+        
+        for fn in self._files:
+           XRCCTRL(self, "LST_FILES").\
+                         InsertImageStringItem(0, fn.split(os.sep)[-1], 0)
+
+   def __workMetadata(self, filename=None):
+       meta = {}
+
+       formats = {'Other':None,
+                  'Audio':'Sound',
+                  'Video':'MovingImage',
+                  'Image':'StillImage',
+                  'Text':'Text',
+                  'Interactive':'InteractiveResource'
+                  }
+       
+       controls = {'TXT_WORK_TITLE':'title',
+                   'TXT_DESCRIPTION':'description',
+                   'TXT_CREATOR':'creator',
+                   'TXT_SOURCE_URL':'source',
+                   'TXT_KEYWORDS':'subjects'
+                   }
+
+       # get the text control values
+       for c in controls:
+           if XRCCTRL(self, c).GetValue():
+               meta[controls[c]] = XRCCTRL(self, c).GetValue()
+
+       # get the work format
+       meta['format'] = formats[XRCCTRL(self, "CMB_WORK_FORMAT").GetValue()]
+       
+       if filename is None:
+           return meta
+
+       try:
+            if 'creator' not in meta:
+                meta['creator'] = metadata(filename).getArtist()
+
+            if 'title' not in meta:
+                meta['title'] = metadata(filename).getTitle()
+       except NotImplementedError, e:
+            pass
+       
+       return meta
+               
+   def embed (self, event):
+        # make sure we have all the information we need
+        #if not(self._readyToEmbed(event)):
+        #    return
+
+        # get form values
+        license = self.__license_url #XRCCTRL(self, "TXT_LICENSE").GetValue()
+        verify_url = XRCCTRL(self, "TXT_VERIFICATION").GetValue()
+        year = XRCCTRL(self, "TXT_YEAR").GetValue()
+        holder = XRCCTRL(self, "TXT_HOLDER").GetValue()
+
+        for filename in self._files:
+            try:
+                 metadata(filename).embed(license, verify_url, year, holder)
+            except NotImplementedError, e:
+                 pass
+
+        # generate the verification RDF
+        verification = rdf.generate(self._files, verify_url, 
+                                    license, year, holder,
+                                    work_meta=self.__workMetadata())
+
+        XRCCTRL(self, "TXT_RDF").SetValue(verification)
+
+   def __archiveId(self, workMeta):
+       """Generates an archive.org identifier from work metadata or
+       embedded ID3 tags."""
+
+       id_pieces = []
+       if 'creator' in workMeta and workMeta['creator']:
+           id_pieces.append(workMeta['creator'])
+
+       if 'title' in workMeta and workMeta['title']:
+           id_pieces.append(workMeta['title'])
+
+       if len(id_pieces) < 1:
+           id_pieces = id_pieces + [os.path.split(n)[1] for n in self._files]
+           
+       archive_id = pyarchive.identifier.munge(" ".join(id_pieces))
+       try:
+           id_avail = pyarchive.identifier.available(archive_id)
+       except pyarchive.exceptions.MissingParameterException, e:
+           id_avail = False
+
+       # if the id is not available, add a number to the end
+       # and check again
+       i = 0
+       orig_id = archive_id
+       while not(id_avail):
+           archive_id = '%s_%s' % (orig_id, i)
+           
+           i = i + 1
+           id_avail = pyarchive.identifier.available(archive_id)
+
+       return archive_id
+           
+   def archive(self, event):
+       """Embed the license and upload files to archive.org"""
+
+       # generate the identifier and make sure it's available
+       workMeta = self.__workMetadata(self._files[0])
+       archive_id = self.__archiveId(workMeta)
+
+       # determine the appropriate collection
+       work_type = XRCCTRL(self, "CMB_WORK_FORMAT").GetValue().lower()
+
+       if work_type == 'audio':
+           archive_collection = pyarchive.const.OPENSOURCE_AUDIO
+           submission_type = pyarchive.const.AUDIO
+       elif work_type == 'video':
+           archive_collection = pyarchive.const.OPENSOURCE_MOVIES
+           submission_type = pyarchive.const.VIDEO
+       else:
+           archive_collection = pyarchive.const.OPENSOURCE_MEDIA
+           submission_type = work_type = XRCCTRL(self, "CMB_WORK_FORMAT").GetValue() #work_type
+           
+       # generate the verification url
+       v_url = pyarchive.identifier.verify_url(archive_collection,
+                                               archive_id,
+                                               submission_type)
+       
+       # embed the license in the file(s)
+       # get form values
+       license = self.__license_url
+       year = XRCCTRL(self, "TXT_YEAR").GetValue()
+       holder = XRCCTRL(self, "TXT_HOLDER").GetValue()
+
+       for filename in self._files:
+           try:
+                metadata(filename).embed(license, v_url, year, holder)
+           except NotImplementedError, e:
+                pass
+
+       # create the submission object
+       submission = pyarchive.submission.ArchiveItem(
+           archive_id, archive_collection,
+           submission_type,
+           (('title' in workMeta and workMeta['title']) or 'untitled')
+           )
+
+       # assign any work metadata to the submission for carry over
+       for key in workMeta:
+           submission[key] = workMeta[key]
+
+       # assemble the submission metadata
+       archive_meta_controls = {'TXT_TAPER':pyarchive.const.TAPER,
+                                'TXT_SOURCE':pyarchive.const.SOURCE,
+                                'TXT_RUNTIME':pyarchive.const.RUNTIME,
+                                'TXT_DATE':pyarchive.const.DATE,
+                                'TXT_NOTES':pyarchive.const.NOTES,
+                                }
+       
+       submission['licenseurl'] = license
+       for key in archive_meta_controls:
+           if XRCCTRL(self, key).GetValue():
+               submission[archive_meta_controls[key]] = \
+                          XRCCTRL(self, key).GetValue()
+               
+       for filename in self._files:
+           sub = submission.addFile(filename, pyarchive.const.ORIGINAL,
+                              claim = self.__claimString(license, v_url, year, holder)
+                              )
+           sub.format = self.getPage('FILE_FORMAT').getFormat(filename)
+
+       final_url = submission.submit(XRCCTRL(self, "TXT_USERNAME").GetValue(),
+                         XRCCTRL(self, "TXT_PASSWORD").GetValue(),
+                         callback=XRCCTRL(self, "FTP_PROGRESS").callback)
+
+       return final_url
+
+   def __claimString(self, license, verification, year, holder):
+       return "%s %s. Licensed to the public under %s verify at %s" % (
+            year, holder, license, verification )
+       
+   def saveRdf(self, event):
+       fileBrowser = wx.FileDialog(self, wildcard="*.txt",
+                                   style= wx.SAVE)
+       if fileBrowser.ShowModal() == wx.ID_OK:
+           # save the RDF into the selected filename
+           outfile = file(fileBrowser.GetPath(), 'w')
+           outfile.write(XRCCTRL(self, "TXT_RDF").GetValue())
+           outfile.close()
+   
+class CcWizApp(wx.App):
+   def OnInit(self):
+      # read preferences, if any
+      self.__readPrefs()
+      
+      wx.InitAllImageHandlers()
+
+      # take care of any custom settings here
+      self.SetAppName('ccPublisher')
+
+      # create the main window and set it as the top level window
+      self.main = CcTagWizard(self)
+      self.main.Show(True)
+
+      self.SetTopWindow(self.main)
+
+      return True
+
+   def OnExit(self):
+       # write out preferences
+       self.__writePrefs()
+
+   def __readPrefs(self):
+       self.prefs = shelve.open(PREFS_FILE)
+       
+   def __writePrefs(self):
+       self.prefs.close()
+   
+   def MacOpenFile(self, filename):
+      # pass the filename into the main form
+      if self.main:
+         self.main.selectFiles([filename])
+        
+def main(argv=[]):
+   # create the application and execute it
+   import wxsupportwiz
+   wxsupportwiz.wxAddExceptHook('http://api.creativecommons.org/traceback.py',
+                                CCT_VERSION)
+
+   app = CcWizApp(filename=ERR_LOG)
+
+   if len(argv) > 1:
+       app.main.selectFiles(argv[1:])
+
+   app.MainLoop()
+   
+if __name__ == '__main__':
+
+    # set any platform-specific parameters
+    if platform.system().lower() == 'darwin':
+        # set the file path to the XRC resource file
+        # to handle the app bundle properly
+        XRC_SOURCE = os.path.join(os.path.dirname(sys.argv[0]), 'resources', XRC_SOURCE)
+        IMAGES_DIR = os.path.join(os.path.dirname(sys.argv[0]), IMAGES_DIR)
+
+        # store the preferences and error log in ~/Library/Application Support/ccPublisher
+        app_lib_dir = os.path.expanduser('~/Library/Application Support/ccPublisher')
+        if not(os.path.exists(app_lib_dir)):
+               os.makedirs(app_lib_dir)
+        PREFS_FILE = os.path.join(app_lib_dir, PREFS_FILE)
+        ERR_LOG = os.path.join(app_lib_dir, ERR_LOG)
+        
+    elif platform.system().lower() == 'windows':
+        IMAGES_DIR = os.path.join(os.path.dirname(sys.argv[0]), IMAGES_DIR)
+
+        XRC_SOURCE = os.path.join(os.path.dirname(sys.argv[0]),
+                                  'resources', XRC_SOURCE)
+        ICON_FILE = os.path.join(os.path.dirname(sys.argv[0]),
+                                  'resources', ICON_FILE)
+        PREFS_FILE = os.path.join(os.path.dirname(sys.argv[0]),
+                                  PREFS_FILE)
+    elif platform.system().lower() == 'linux':
+        # check if the resources directory exists;
+        # if not check for /usr/share/ccpublisher
+        NIX_RSC_DIR = os.path.join('usr','share','resources','ccpublisher')
+                
+        if not(os.path.exists(IMAGES_DIR) and os.path.isdir(IMAGES_DIR)):
+            if os.path.exists(NIX_RSC_DIR):
+                IMAGES_DIR = NIX_RSC_DIR
+                XRC_SOURCE = os.path.join(NIX_RSC_DIR, XRC_SOURCE)
+
+        # reset the folder paths for log file and prefs file
+        NIX_PREF_DIR = os.path.join(os.path.expanduser('~'), '.ccpublisher')
+        if not(os.path.exists(NIX_PREF_DIR)):
+            os.makedirs(NIX_PREF_DIR)
+
+        PREFS_FILE = os.path.join(NIX_PREF_DIR, PREFS_FILE)
+        ERR_LOG = os.path.join(NIX_PREF_DIR, ERR_LOG)
+            
+    cmdArgs = sys.argv
+
+    main(cmdArgs)
+
