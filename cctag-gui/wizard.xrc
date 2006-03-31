@@ -1,0 +1,834 @@
+<?xml version="1.0" ?>
+<resource>
+  <object class="wxPanel" name="VERIFICATION">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <growablecols>0</growablecols>
+      <object class="sizeritem">
+        <object class="StaticWrapText">
+          <label>Please enter the URL where you will host your verification metadata.  In most cases, this will be the page you link to your MP3 file from.</label>
+        </object>
+        <cellpos>0,0</cellpos>
+        <cellspan>1,2</cellspan>
+      </object>
+      <object class="spacer">
+        <size>5,5</size>
+      </object>
+      <object class="sizeritem">
+        <object class="wxFlexGridSizer">
+          <cols>3</cols>
+          <hgap>5</hgap>
+          <growablecols>1</growablecols>
+          <object class="sizeritem">
+            <object class="wxStaticText" name="LBL_URL">
+              <label>Verification URL:</label>
+            </object>
+            <cellpos>1,0</cellpos>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_VERIFICATION">
+              <value>http://</value>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>1,1</cellpos>
+          </object>
+          <object class="spacer">
+            <size>1,1</size>
+          </object>
+        </object>
+        <flag>wxEXPAND</flag>
+      </object>
+    </object>
+  </object>
+  <object class="wxPanel" name="FTP_PROGRESS">
+    <object class="wxGridBagSizer">
+      <growablecols>0</growablecols>
+      <object class="sizeritem">
+        <object class="StaticWrapText">
+          <label>Uploading files and metadata to archive.org...</label>
+        </object>
+        <cellpos>0,0</cellpos>
+      </object>
+      <object class="sizeritem">
+        <object class="StaticWrapText" name="LBL_CURRENTLY">
+          <label/>
+        </object>
+        <cellpos>2,0</cellpos>
+      </object>
+      <object class="sizeritem">
+        <object class="wxGauge" name="WXG_PROGRESS">
+          <range>100</range>
+          <style>wxGA_PROGRESSBAR</style>
+        </object>
+        <flag>wxEXPAND</flag>
+        <cellpos>3,0</cellpos>
+      </object>
+      <growablerows>4</growablerows>
+    </object>
+  </object>
+  <object class="wxPanel" name="DROPFILES">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <object class="sizeritem">
+        <object class="wxStaticText" name="LBL_DROPFILES">
+          <label>Drag n' drop the audio or video files you want to publish to the 
+Web with a Creative Commons license, or click the Browse button 
+to manually select your files.</label>
+        </object>
+        <cellpos>0,0</cellpos>
+        <cellspan>1,1</cellspan>
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxFlexGridSizer">
+          <cols>3</cols>
+          <hgap>5</hgap>
+          <object class="sizeritem">
+            <object class="wxButton" name="CMD_BROWSE">
+              <label>Browse</label>
+            </object>
+            <flag>wxALIGN_BOTTOM</flag>
+            <cellpos>2,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxButton" name="CMD_DELETE">
+              <label>Delete</label>
+            </object>
+            <flag>wxALIGN_BOTTOM</flag>
+          </object>
+          <object class="spacer">
+            <size>1,1</size>
+          </object>
+          <growablecols>1</growablecols>
+          <growablecols>2</growablecols>
+        </object>
+        <flag>wxALIGN_RIGHT</flag>
+        <border>05</border>
+        <cellpos>2,0</cellpos>
+        <cellspan>1,1</cellspan>
+      </object>
+      <object class="sizeritem">
+        <object class="wxListCtrl" name="LST_FILES">
+          <size>450,175</size>
+          <style>wxLC_ICON|wxSIMPLE_BORDER</style>
+        </object>
+        <cellpos>1,0</cellpos>
+        <cellspan>1,1</cellspan>
+      </object>
+      <growablerows>2</growablerows>
+      <vgap>5</vgap>
+      <growablecols>0</growablecols>
+    </object>
+  </object>
+  <object class="wxPanel" name="WORK_METADATA">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <object class="sizeritem">
+        <object class="wxFlexGridSizer">
+          <cols>2</cols>
+          <object class="sizeritem">
+            <object class="wxStaticText" name="LBL_HOLDER">
+              <label>Copyright Holder:</label>
+              <tooltip>The copyright holder, which may or may not be the same as the creator.</tooltip>
+            </object>
+            <cellpos>2,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxComboBox" name="TXT_HOLDER">
+              <content/>
+              <style>wxCB_DROPDOWN</style>
+              <tooltip>The copyright holder, which may or may not be the same as the creator.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>2,1</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText" name="LBL_YEAR" platform="mac|unix">
+              <label>Copyright Year:</label>
+              <tooltip>If you have not officially registered for a copyright on your work the default date is the date you created the work or completed it.</tooltip>
+            </object>
+            <object class="wxStaticText" name="LBL_YEAR" platform="win">
+          
+          
+          
+              
+              
+              
+              
+              
+              
+              <label>Copyright Year:</label>
+          
+          
+          
+              
+              
+              
+              
+              
+              
+              <tooltip>If you have not officially registered for a copyright on your work the default date is the date you created the work or completed it.</tooltip>
+        </object>
+            <cellpos>3,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_YEAR">
+              <value></value>
+              <tooltip platform="win">If you have not officially registered \nfor a copyright on your work the default date is the date you created the work or completed it.</tooltip>
+              <tooltip platform="mac|unix">If you have not officially registered for a copyright on your work the default date is the date you created the work or completed it.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>3,1</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Work Format:</label>
+              <tooltip>Specifying the work format helps people search for your work on the Internet.</tooltip>
+            </object>
+            <cellpos>7,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxComboBox" name="CMB_WORK_FORMAT">
+              <content>
+                <item>Other</item>
+                <item>Audio</item>
+                <item>Video</item>
+                <item>Image</item>
+                <item>Text</item>
+                <item>Interactive</item>
+              </content>
+              <selection>0</selection>
+              <style>wxCB_SIMPLE|wxCB_READONLY</style>
+              <tooltip>Specifying the work format helps people search for your work on the Internet.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>7,1</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <growablecols>1</growablecols>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Description:</label>
+              <tooltip>A description of your work, usually an abstract in the case of text-based works or a content description in the case of visual and audio works.</tooltip>
+            </object>
+            <cellpos>9,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_DESCRIPTION">
+              <tooltip>A description of your work, usually an abstract in the case of text-based works or a content description in the case of visual and audio works.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>9,1</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Keywords:</label>
+            </object>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_KEYWORDS"/>
+            <flag>wxEXPAND</flag>
+          </object>
+          <object class="spacer">
+            <size>5,5</size>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>(seperate with commas)</label>
+            </object>
+          </object>
+        </object>
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="spacer">
+        <size>10,10</size>
+      </object>
+      <object class="sizeritem">
+        <object class="wxButton" name="CMD_ADV_WORKMETA">
+          <label>Add advanced information</label>
+        </object>
+      </object>
+      <object class="spacer">
+        <size>10,10</size>
+      </object>
+      <object class="sizeritem">
+        <object class="wxPanel" name="PNL_ADVANCED">
+          <object class="wxFlexGridSizer">
+            <cols>1</cols>
+            <object class="sizeritem">
+              <object class="wxStaticText">
+                <label>Advanced information will help people find your work, but is completely optional.
+
+</label>
+              </object>
+              <flag>wxEXPAND</flag>
+            </object>
+            <growablecols>0</growablecols>
+            <object class="spacer">
+              <size>10,10</size>
+            </object>
+            <object class="sizeritem">
+              <object class="wxFlexGridSizer">
+                <cols>2</cols>
+                <object class="sizeritem">
+                  <object class="wxStaticText">
+                    <label>Title of Work:</label>
+                    <tooltip>The title of the work.</tooltip>
+                  </object>
+                  <cellpos>8,0</cellpos>
+                  <cellspan>1,1</cellspan>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxTextCtrl" name="TXT_WORK_TITLE">
+                    <tooltip>The title of the work.</tooltip>
+                  </object>
+                  <flag>wxEXPAND</flag>
+                  <cellpos>8,1</cellpos>
+                  <cellspan>1,1</cellspan>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxStaticText">
+                    <label>Creator's Name:</label>
+                    <tooltip>The person or organization which created the work.  This may or may not be the same as the copyright holder.</tooltip>
+                  </object>
+                  <cellpos>10,0</cellpos>
+                  <cellspan>1,1</cellspan>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxTextCtrl" name="TXT_CREATOR">
+                    <tooltip>The person or organization which created the work.  This may or may not be the same as the copyright holder.</tooltip>
+                  </object>
+                  <flag>wxEXPAND</flag>
+                  <cellpos>10,1</cellpos>
+                  <cellspan>1,1</cellspan>
+                </object>
+                <growablecols>1</growablecols>
+              </object>
+              <flag>wxEXPAND</flag>
+            </object>
+            <growablerows>2</growablerows>
+            <object class="sizeritem">
+              <object class="wxStaticText">
+                <label>If this file is derived from another work, what is the URL of the original?</label>
+              </object>
+            </object>
+            <object class="sizeritem">
+              <object class="wxTextCtrl" name="TXT_SOURCE_URL"/>
+              <flag>wxEXPAND</flag>
+            </object>
+          </object>
+          <hidden>1</hidden>
+        </object>
+        <flag>wxEXPAND</flag>
+      </object>
+      <growablecols>0</growablecols>
+      <growablerows>4</growablerows>
+    </object>
+  </object>
+  <object class="wxPanel" name="ARCHIVE_LOGIN">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <object class="sizeritem">
+        <object class="StaticWrapText" name="LBL_ARCHIVE_WARNING">
+          <label>The Internet Archive hosts audio and video files for free, if they are Creative Commons licensed.  However, they require you have a free account with them.</label>
+        </object>
+        <border>1</border>
+        <cellpos>1,0</cellpos>
+        <cellspan>1,2</cellspan>
+      </object>
+      <object class="sizeritem">
+        <object class="StaticWrapText">
+          <label>Please enter your email address and Internet Archive password:</label>
+        </object>
+        <flag>wxEXPAND</flag>
+        <cellpos>0,0</cellpos>
+        <cellspan>1,2</cellspan>
+      </object>
+      <object class="sizeritem">
+        <object class="wxFlexGridSizer">
+          <cols>2</cols>
+          <object class="sizeritem">
+            <object class="wxStaticText" name="LBL_USERNAME">
+              <label>Email address:</label>
+            </object>
+            <cellpos>2,0</cellpos>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_USERNAME"/>
+            <flag>wxEXPAND</flag>
+            <cellpos>2,1</cellpos>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText" name="LBL_PASSWORD">
+              <label>Password:</label>
+            </object>
+            <cellpos>3,0</cellpos>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_PASSWORD">
+              <style>wxTE_PASSWORD</style>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>3,1</cellpos>
+          </object>
+          <growablecols>1</growablecols>
+        </object>
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxCheckBox" name="CHK_SAVEPASSWD">
+          <label>Save username and password</label>
+          <checked>1</checked>
+        </object>
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxButton" name="HELP_NO_IA_ACCOUNT">
+          <label>Don't have an Internet Archive account?</label>
+          <style>wxNO_BORDER</style>
+        </object>
+        <flag>wxALIGN_RIGHT|wxALIGN_BOTTOM</flag>
+        <cellpos>5,0</cellpos>
+        <cellspan>1,2</cellspan>
+      </object>
+      <vgap>10</vgap>
+      <growablecols>0</growablecols>
+      <object class="sizeritem">
+        <object class="wxButton" name="CMD_HOST_MYSELF">
+          <label>I want to host the files myself</label>
+        </object>
+        <flag>wxALIGN_RIGHT|wxALIGN_BOTTOM</flag>
+      </object>
+      <object class="spacer">
+        <size>1,1</size>
+      </object>
+      <growablerows>4</growablerows>
+    </object>
+  </object>
+  <object class="wxPanel" name="CHOOSE_DESTINATION">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <growablecols>0</growablecols>
+      <object class="sizeritem">
+        <object class="StaticWrapText">
+          <label>We have all the information we need to tag your files with your chosen license.  At this point, you may choose to publish your file to the Internet Archive for free hosting, or if you'd rather publish to your own web site, you may provide us the URL where your file will be hosted (or if different, the URL where you wish to host the verification metadata).  We will then generate some HTML code which you hsould paste into the code of that web page.</label>
+        </object>
+      </object>
+      <object class="spacer">
+        <size>10,10</size>
+      </object>
+      <object class="sizeritem">
+        <object class="wxRadioButton" name="RDB_ARCHIVE">
+          <label>Yes, upload my work to the Internet Archive for free hosting</label>
+          <value>1</value>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <object class="wxRadioButton" name="RDB_SELFHOST">
+          <label>No thanks, I'll host the files myself.</label>
+          <value>0</value>
+        </object>
+      </object>
+      <growablerows>4</growablerows>
+      <object class="sizeritem">
+        <object class="wxButton" name="HELP_WHAT_IS_IA">
+          <label>What is the Internet Archive?</label>
+          <style>wxNO_BORDER</style>
+        </object>
+        <flag>wxALIGN_RIGHT|wxALIGN_BOTTOM</flag>
+      </object>
+      <object class="spacer">
+        <size>1,1</size>
+      </object>
+    </object>
+  </object>
+  <object class="wxPanel" name="VRDF">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <object class="sizeritem">
+        <object class="StaticWrapText">
+          <label>This is your verification RDF.</label>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <object class="StaticWrapText" name="LBL_VRDF_DEST">
+          <label>Copy and paste the text below into the document at http://foo/bar.</label>
+        </object>
+        <flag>wxEXPAND|wxALL</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="StaticWrapText">
+          <label>After you paste the verification text into your web page, your file is ready to file share; just drop it in your shared folder.</label>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <object class="wxButton" name="CMD_SAVE_RDF">
+          <label>Save</label>
+        </object>
+        <flag>wxALIGN_RIGHT</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxTextCtrl" name="TXT_RDF">
+          <style>wxTE_MULTILINE|wxTE_READONLY</style>
+        </object>
+        <flag>wxALL|wxGROW</flag>
+      </object>
+      <vgap>5</vgap>
+      <growablecols>0</growablecols>
+      <growablerows>4</growablerows>
+    </object>
+  </object>
+  <object class="wxFrame" name="FRM_MAIN">
+    <title>ccPublisher</title>
+    <centered>1</centered>
+    <bg>#C0C0C0</bg>
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <growablerows>1</growablerows>
+      <growablecols>0</growablecols>
+      <object class="sizeritem">
+        <object class="wxPanel" name="PNL_HEADER">
+          <bg>#729cb3</bg>
+          <object class="wxFlexGridSizer">
+            <cols>3</cols>
+            <object class="spacer">
+              <size>5,5</size>
+              <flag>wxEXPAND</flag>
+            </object>
+            <object class="sizeritem">
+              <object class="wxFlexGridSizer">
+                <cols>1</cols>
+                <object class="spacer">
+                  <size>12,12</size>
+                </object>
+                <object class="sizeritem">
+                  <object class="wxStaticText" name="LBL_HEADER_TEXT">
+                    <label>Is this file Creative Commons licensed?</label>
+                    <font>
+                      <size>16</size>
+                      <style>default</style>
+                      <weight>bold</weight>
+                      <family>bold</family>
+                      <underlined>False</underlined>
+                      <face>Sans</face>
+                    </font>
+                  </object>
+                  <flag>wxEXPAND|wxALIGN_CENTRE_VERTICAL</flag>
+                </object>
+                <growablecols>0</growablecols>
+              </object>
+              <flag>wxEXPAND</flag>
+            </object>
+            <object class="sizeritem">
+              <object class="wxStaticBitmap">
+                <bitmap>publishguy_small.gif</bitmap>
+              </object>
+            </object>
+            <growablecols>1</growablecols>
+            <growablerows>0</growablerows>
+          </object>
+        </object>
+        <flag>wxEXPAND</flag>
+        <border>5</border>
+        <cellpos>0,0</cellpos>
+        <cellspan>1,3</cellspan>
+      </object>
+      <object class="sizeritem">
+        <object class="wxPanel" name="PNL_BODY">
+          <object class="wxFlexGridSizer">
+            <cols>1</cols>
+            <growablerows>0</growablerows>
+            <vgap>5</vgap>
+            <growablecols>0</growablecols>
+            <object class="sizeritem">
+              <object class="wxPanel" name="PNL_BUTTONS">
+                <object class="wxFlexGridSizer">
+                  <object class="sizeritem">
+                    <object class="wxButton" name="CMD_PREV">
+                      <label>Prev</label>
+                    </object>
+                    <flag>wxALIGN_RIGHT</flag>
+                  </object>
+                  <object class="sizeritem">
+                    <object class="wxButton" name="CMD_NEXT">
+                      <label>Next</label>
+                      <default>1</default>
+                    </object>
+                  </object>
+                  <cols>2</cols>
+                  <vgap>5</vgap>
+                  <hgap>5</hgap>
+                  <growablecols>0</growablecols>
+                  <object class="spacer">
+                    <size>2,2</size>
+                  </object>
+                </object>
+              </object>
+              <flag>wxEXPAND|wxALIGN_RIGHT</flag>
+              <cellpos>2,1</cellpos>
+              <cellspan>1,1</cellspan>
+            </object>
+          </object>
+        </object>
+        <flag>wxALL|wxEXPAND</flag>
+        <border>10</border>
+      </object>
+    </object>
+  </object>
+  <object class="wxPanel" name="READY">
+    <object class="wxGridBagSizer">
+      <object class="sizeritem">
+        <object class="StaticWrapText" name="LBL_READY_MSG">
+          <label>ccPublisher has collected all the information necessary to license your files.  Click Next to tag these files:</label>
+        </object>
+        <flag>wxEXPAND</flag>
+        <cellpos>0,0</cellpos>
+        <cellspan>1,1</cellspan>
+      </object>
+      <object class="sizeritem">
+        <object class="wxListBox" name="LST_READY_FILES">
+          <content/>
+        </object>
+        <flag>wxALL|wxEXPAND</flag>
+        <cellpos>1,0</cellpos>
+        <cellspan>1,1</cellspan>
+      </object>
+      <growablecols>0</growablecols>
+      <growablerows>1</growablerows>
+      <object class="sizeritem">
+        <object class="wxCheckBox" name="CHK_ADV_ARCHIVE">
+          <label>Add more optional information about your file.</label>
+        </object>
+        <flag>wxEXPAND</flag>
+        <cellpos>5,0</cellpos>
+        <cellspan>1,1</cellspan>
+      </object>
+    </object>
+  </object>
+  <object class="wxPanel" name="ARCHIVE_METADATA">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <object class="sizeritem">
+        <object class="StaticWrapText">
+          <label>The Internet Archive allows you to provide additional information about your work:</label>
+        </object>
+        <flag>wxEXPAND</flag>
+        <cellpos>0,0</cellpos>
+        <cellspan>1,2</cellspan>
+      </object>
+      <object class="sizeritem">
+        <object class="wxGridBagSizer">
+          <growablecols>1</growablecols>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Taper:</label>
+              <tooltip>The person or organization which recorded or taped the original work.</tooltip>
+            </object>
+            <cellpos>2,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_TAPER">
+              <tooltip>The person or organization which recorded or taped the original work.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>2,1</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Source:</label>
+              <tooltip>The input source used to record the work.</tooltip>
+            </object>
+            <cellpos>3,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_SOURCE">
+              <tooltip>The input source used to record the work.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>3,1</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Run time:</label>
+              <tooltip>The total running time of the work, in the format HH:MM:SS.</tooltip>
+            </object>
+            <cellpos>4,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_RUNTIME">
+              <tooltip>The total running time of the work, in the format HH:MM:SS.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>4,1</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText" name="">
+              <label>Date:</label>
+              <tooltip>The date the work was taped; in the case of concerts, this is usually the performance date.</tooltip>
+            </object>
+            <cellpos>5,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_DATE">
+              <tooltip>The date the work was taped; in the case of concerts, this is usually the performance date.</tooltip>
+            </object>
+            <flag>wxEXPAND</flag>
+            <cellpos>5,1</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxStaticText">
+              <label>Notes:</label>
+              <tooltip>Additional notes about the work; these will be archived with your work at the Internet Archive.</tooltip>
+            </object>
+            <cellpos>6,0</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <object class="sizeritem">
+            <object class="wxTextCtrl" name="TXT_NOTES">
+              <style>wxTE_MULTILINE</style>
+              <tooltip>Additional notes about the work; these will be archived with your work at the Internet Archive.</tooltip>
+            </object>
+            <flag>wxEXPAND|wxALL</flag>
+            <cellpos>6,1</cellpos>
+            <cellspan>1,1</cellspan>
+          </object>
+          <growablerows>6</growablerows>
+        </object>
+        <flag>wxEXPAND|wxALL</flag>
+      </object>
+      <growablerows>1</growablerows>
+      <growablecols>0</growablecols>
+      <object class="sizeritem">
+        <object class="wxStaticText">
+          <label>Click Next to upload your file to the Internet Archive.</label>
+        </object>
+        <flag>wxEXPAND</flag>
+      </object>
+    </object>
+  </object>
+  <object class="wxMenu" name="MNU_FL_POPUP">
+    <label>Filelist</label>
+    <object class="wxMenuItem" name="MNU_FL_DELETE">
+      <label>Delete</label>
+    </object>
+    <object class="wxMenuItem" name="MNU_FL_BROWSE">
+      <label>Browse...</label>
+    </object>
+  </object>
+  <object class="wxPanel" name="WORK_TYPE">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <object class="sizeritem">
+        <object class="wxStaticText">
+          <label>The Internet Archive hosts Creative Commons-licensed \naudio and video files.  Please select your work type.</label>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <object class="wxRadioButton" name="RDB_AUDIO">
+          <label>Audio</label>
+          <value>1</value>
+        </object>
+      </object>
+      <object class="sizeritem">
+        <object class="wxRadioButton" name="RDB_VIDEO">
+          <label>Video</label>
+        </object>
+      </object>
+      <object class="spacer">
+        <size>0,0</size>
+      </object>
+      <growablerows>3</growablerows>
+      <growablecols>0</growablecols>
+    </object>
+  </object>
+  <object class="wxPanel" name="FILE_FORMAT">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <object class="sizeritem">
+        <object class="wxStaticText">
+          <label>The Internet Archive needs to know the format of your file.  Please click 
+on the drop down box to select the format type for each file.</label>
+        </object>
+        <flag>wxEXPAND</flag>
+      </object>
+      <growablecols>0</growablecols>
+      <object class="spacer">
+        <size>10,10</size>
+      </object>
+      <object class="sizeritem">
+        <object class="wxPanel" name="PNL_FILELIST">
+          <object class="wxFlexGridSizer">
+            <cols>2</cols>
+            <vgap>5</vgap>
+            <hgap>5</hgap>
+            <growablecols>1</growablecols>
+          </object>
+        </object>
+        <flag>wxALL|wxEXPAND</flag>
+      </object>
+      <growablerows>2</growablerows>
+    </object>
+  </object>
+  <object class="wxPanel" name="CCTAG_WELCOME">
+    <object class="wxFlexGridSizer">
+      <cols>1</cols>
+      <object class="sizeritem">
+        <object class="wxStaticText">
+          <label>This tool will help you put your audio and video on the 
+Web with a Creative Commons license.
+
+It's simple:</label>
+        </object>
+      </object>
+      <vgap>5</vgap>
+      <growablecols>0</growablecols>
+      <object class="sizeritem">
+        <object class="wxStaticText">
+          <label>1) Drag and drop your audio or video files
+2) Choose your Creative Commons license
+3) Optionally send your Creative Commons licensed files to the Internet Archive, a free hosting service
+4) Get a URL where you and your friends can download your file
+
+</label>
+        </object>
+        <flag>wxGROW</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxStaticText">
+          <label>Click Next to get started.</label>
+        </object>
+        <flag>wxEXPAND</flag>
+      </object>
+      <object class="sizeritem">
+        <object class="wxButton" name="HELP_WHAT_TYPES">
+          <label>How does this work?</label>
+          <style>wxNO_BORDER</style>
+        </object>
+        <flag>wxALIGN_RIGHT|wxALIGN_BOTTOM</flag>
+        <cellpos>2,1</cellpos>
+        <cellspan>1,1</cellspan>
+      </object>
+      <object class="spacer">
+        <size>2,2</size>
+      </object>
+      <growablerows>2</growablerows>
+      <growablerows>3</growablerows>
+    </object>
+  </object>
+</resource>
